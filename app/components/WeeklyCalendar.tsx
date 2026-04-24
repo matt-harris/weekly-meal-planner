@@ -1,7 +1,6 @@
 "use client";
 
 import DayColumn from "./DayColumn";
-import { Person } from "@/lib/types";
 
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
 const DAY_NAMES: Record<string, string> = {
@@ -16,17 +15,15 @@ const DAY_NAMES: Record<string, string> = {
 
 export default function WeeklyCalendar() {
   const today = new Date();
-  const todayDay = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
-    today.getDay()
-  ];
+  const todayDay = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][today.getDay()];
 
   return (
-    <div className="flex-1 overflow-x-auto bg-gray-50 p-6 dark:bg-gray-950">
-      <div className="grid grid-cols-7 gap-4">
+    <div className="flex-1 overflow-x-auto bg-background p-6">
+      <div className="grid min-w-[700px] grid-cols-7 gap-3">
         {DAYS.map((day) => (
           <DayColumn
             key={day}
-            day={day as typeof DAYS[number]}
+            day={day}
             dayName={DAY_NAMES[day]}
             isToday={day === todayDay}
           />

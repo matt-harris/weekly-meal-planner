@@ -15,11 +15,11 @@ export default function OutPlaceholder({ person }: OutPlaceholderProps) {
         e.dataTransfer.setData("type", "out");
         e.dataTransfer.setData("id", person);
       }}
-      className="cursor-move rounded-lg border border-amber-300 bg-amber-50 p-3 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900 dark:hover:bg-amber-800"
+      className="cursor-move rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 transition-colors hover:bg-amber-500/20"
     >
-      <h3 className="font-medium text-amber-900 dark:text-amber-100">
-        🍺 {person} Out
-      </h3>
+      <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+        {person} Out
+      </p>
     </div>
   );
 }

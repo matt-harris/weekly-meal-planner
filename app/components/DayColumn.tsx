@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useMealPlan } from "../lib/hooks/useMealPlan";
 import { useRecipes } from "../lib/hooks/useRecipes";
 import { DayMeal } from "../lib/types";
@@ -25,9 +26,7 @@ export default function DayColumn({ day, dayName, isToday }: DayColumnProps) {
     setDragOver(true);
   };
 
-  const handleDragLeave = () => {
-    setDragOver(false);
-  };
+  const handleDragLeave = () => setDragOver(false);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -38,12 +37,9 @@ export default function DayColumn({ day, dayName, isToday }: DayColumnProps) {
 
     if (type === "recipe") {
       const recipe = getRecipeById(id);
-      if (recipe) {
-        addMealToDay(day, recipe);
-      }
+      if (recipe) addMealToDay(day, recipe);
     } else if (type === "out") {
-      const person = id;
-      addMealToDay(day, null, person as any);
+      addMealToDay(day, null, id as DayMeal["event"]);
     }
   };
 
@@ -52,32 +48,38 @@ export default function DayColumn({ day, dayName, isToday }: DayColumnProps) {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`min-h-96 flex flex-col rounded-lg border-2 border-dashed p-4 transition-colors ${
+      className={`flex min-h-96 flex-col overflow-hidden rounded-xl border-2 transition-all ${
         isToday
-          ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-950"
+          ? "border-primary"
           : dragOver
-            ? "border-blue-400 bg-blue-50 dark:border-blue-400 dark:bg-blue-950"
-            : "border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900"
+            ? "border-primary/50 bg-primary/5"
+            : "border-border bg-card"
       }`}
     >
-      <div className="mb-4">
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
-          {day}
-        </h3>
-        <h2 className="text-lg font-bold text-black dark:text-white">
+      {/* Day header */}
+      <div className={`px-4 pt-3 pb-2 ${isToday ? "bg-primary text-primary-foreground" : ""}`}>
+        <h2 className={`text-lg font-bold ${isToday ? "text-primary-foreground" : "text-foreground"}`}>
           {dayName}
         </h2>
         {isToday && (
-          <span className="mt-1 inline-block text-xs font-semibold text-blue-600 dark:text-blue-400">
+          <span className="mt-1 inline-block rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-semibold text-primary-foreground">
             Today
           </span>
         )}
       </div>
 
-      <div className="space-y-2 flex-1">
+      {/* Meals area */}
+      <div className={`flex flex-1 flex-col gap-2 p-3 ${isToday ? "bg-primary/5" : ""}`}>
         {meals.map((meal) => (
           <MealCard key={meal.id} meal={meal} />
         ))}
+
+        {meals.length === 0 && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-8 text-muted-foreground/40">
+            <Plus size={20} strokeWidth={1.5} />
+            <p className="text-xs">Drop meals</p>
+          </div>
+        )}
       </div>
     </div>
   );

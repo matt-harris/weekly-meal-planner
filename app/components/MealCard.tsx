@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { DayMeal } from "../lib/types";
 import { useMealPlan } from "../lib/hooks/useMealPlan";
 
@@ -10,33 +11,35 @@ interface MealCardProps {
 export default function MealCard({ meal }: MealCardProps) {
   const { removeMealFromDay } = useMealPlan();
 
-  const handleRemove = () => {
-    removeMealFromDay(meal.id);
-  };
-
   return (
-    <div className="flex items-start justify-between gap-2 rounded-lg border border-gray-300 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
-      <div className="flex-1">
+    <div className="group flex items-start justify-between gap-2 rounded-lg border border-border bg-card p-2.5 shadow-sm transition-shadow hover:shadow-md">
+      <div className="min-w-0 flex-1">
         {meal.meal ? (
           <>
-            <h4 className="font-medium text-black dark:text-white">
+            {meal.meal.imageUrl && (
+              <img
+                src={meal.meal.imageUrl}
+                alt=""
+                className="mb-1.5 h-8 w-8 rounded object-cover"
+              />
+            )}
+            <p className="truncate text-sm font-semibold text-foreground">
               {meal.meal.name}
-            </h4>
-            <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {meal.meal.ingredients.length} ingredients
-            </div>
+            </p>
           </>
         ) : meal.event ? (
-          <h4 className="font-medium text-amber-600 dark:text-amber-500">
-            {meal.event} Out
-          </h4>
+          <p className="text-sm font-semibold text-amber-500">{meal.event} Out</p>
         ) : null}
       </div>
       <button
-        onClick={handleRemove}
-        className="text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+        onClick={() => removeMealFromDay(meal.id)}
+        className="mt-0.5 flex-shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
+        title="Remove"
       >
-        ✕
+        <X size={14} />
       </button>
     </div>
   );

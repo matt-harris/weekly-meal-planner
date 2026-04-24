@@ -1,31 +1,61 @@
+"use client";
+
+import { useState } from "react";
+import { Menu } from "lucide-react";
 import RecipeSidebar from "./components/RecipeSidebar";
 import WeeklyCalendar from "./components/WeeklyCalendar";
-import ShoppingList from "./components/ShoppingList";
 import ClearAllButton from "./components/ClearAllButton";
-import OutPlaceholder from "./components/OutPlaceholder";
-import { Person } from "./lib/types";
+import ShoppingListButton from "./components/ShoppingListButton";
+import ThemeToggle from "./components/ThemeToggle";
 
 export default function Home() {
-  const people = [Person.Matt, Person.Erin, Person.Isla, Person.Esme];
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-black">
+    <div className="flex h-screen overflow-hidden bg-background">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Left Sidebar */}
-      <RecipeSidebar />
+      <div
+        className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 md:relative md:z-auto md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <RecipeSidebar onClose={() => setSidebarOpen(false)} />
+      </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-black dark:text-white">
-              Weekly Plan
-            </h1>
-            <div className="flex items-center gap-4">
-              <ClearAllButton />
-              <button className="rounded-lg bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 dark:hover:bg-blue-400">
-                🛒 Shopping List
+        <div className="border-b border-border bg-card px-4 py-3 md:px-6 md:py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
+                aria-label="Open menu"
+              >
+                <Menu size={18} />
               </button>
+              <div>
+                <h1 className="font-heading text-xl font-bold text-foreground md:text-2xl">
+                  Weekly Plan
+                </h1>
+                <p className="hidden text-sm text-muted-foreground sm:block">
+                  Drag meals from your collection to plan your week
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <ClearAllButton />
+              <ShoppingListButton />
             </div>
           </div>
         </div>
@@ -33,24 +63,6 @@ export default function Home() {
         {/* Calendar Area */}
         <div className="flex flex-1 overflow-auto">
           <WeeklyCalendar />
-        </div>
-      </div>
-
-      {/* Right Sidebar */}
-      <div className="w-80 border-l border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-        <div className="mb-6">
-          <ShoppingList />
-        </div>
-
-        <div className="mb-4">
-          <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
-            Out Events
-          </h3>
-          <div className="space-y-2">
-            {people.map((person) => (
-              <OutPlaceholder key={person} person={person as Person} />
-            ))}
-          </div>
         </div>
       </div>
     </div>

@@ -1,63 +1,202 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
+import { Plus, Search, X } from "lucide-react";
 import { useRecipes } from "../lib/hooks/useRecipes";
-import { Recipe } from "../lib/types";
+import { Recipe, Person } from "../lib/types";
 import RecipeCard from "./RecipeCard";
+import OutPlaceholder from "./OutPlaceholder";
 
-export default function RecipeSidebar() {
+interface RecipeSidebarProps {
+  onClose?: () => void;
+}
+
+export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
   const { recipes, addRecipe } = useRecipes();
   const [search, setSearch] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newSource, setNewSource] = useState("");
+  const [newIngredients, setNewIngredients] = useState("");
 
   const filteredRecipes = recipes.filter((recipe) =>
     recipe.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAddRecipe = () => {
-    const name = prompt("Enter recipe name:");
-    if (name) {
-      const newRecipe: Recipe = {
-        id: Date.now().toString(),
-        name,
-        ingredients: [],
-        people: [],
-      };
-      addRecipe(newRecipe);
-    }
-  };
+  function handleSaveNew() {
+    if (!newName.trim()) return;
+    const ingredients = newIngredients
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((name, idx) => ({ id: `new-${Date.now()}-i${idx}`, name }));
+    const newRecipe: Recipe = {
+      id: Date.now().toString(),
+      name: newName.trim(),
+      source: newSource.trim() || undefined,
+      ingredients,
+      people: [],
+    };
+    addRecipe(newRecipe);
+    setAdding(false);
+    setNewName("");
+    setNewSource("");
+    setNewIngredients("");
+  }
+
+  function handleOpenAdd() {
+    setNewName("");
+    setNewSource("");
+    setNewIngredients("");
+    setAdding(true);
+  }
 
   return (
-    <div className="w-72 border-r border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-black">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-black dark:text-white">
-          My Meals
-        </h2>
-        <button
-          onClick={handleAddRecipe}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white hover:bg-blue-600 dark:hover:bg-blue-400"
-        >
-          +
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search meals..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-black placeholder-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
-        />
-      </div>
-
-      <div className="space-y-2 overflow-y-auto">
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          {filteredRecipes.length} recipes
+    <>
+      <div className="flex h-full w-72 flex-shrink-0 flex-col border-r border-border bg-card">
+        {/* Header */}
+        <div className="flex items-start justify-between px-4 pt-5 pb-1">
+          <div>
+            <h1 className="font-heading text-xl font-bold text-foreground">
+              My Meals
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {recipes.length} recipes
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent md:hidden"
+                title="Close"
+              >
+                <X size={16} />
+              </button>
+            )}
+            <button
+              onClick={handleOpenAdd}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:opacity-90"
+              title="Add recipe"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+            </button>
+          </div>
         </div>
-        {filteredRecipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
-        ))}
+
+        {/* Search */}
+        <div className="px-4 py-3">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search meals..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        </div>
+
+        {/* Recipe list */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
+          <div className="space-y-1.5">
+            {filteredRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+            {filteredRecipes.length === 0 && (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                No recipes found
+              </p>
+            )}
+          </div>
+
+          {/* Out Events */}
+          <div className="mt-6 border-t border-border pt-4">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Out Events
+            </h3>
+            <div className="space-y-1.5">
+              {[Person.Matt, Person.Erin, Person.Isla, Person.Esme].map((p) => (
+                <OutPlaceholder key={p} person={p} />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Add Recipe Modal — portalled to body so it's full-screen centered */}
+      {adding &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setAdding(false)}
+          >
+            <div
+              className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="font-heading mb-4 text-lg font-bold text-foreground">Add Recipe</h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground">Name</label>
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSaveNew()}
+                    placeholder="Pasta Bake..."
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground">Source URL</label>
+                  <input
+                    type="text"
+                    value={newSource}
+                    onChange={(e) => setNewSource(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground">
+                    Ingredients <span className="font-normal text-muted-foreground">(comma-separated)</span>
+                  </label>
+                  <textarea
+                    value={newIngredients}
+                    onChange={(e) => setNewIngredients(e.target.value)}
+                    rows={3}
+                    placeholder="pasta, feta, tomatoes..."
+                    className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  onClick={() => setAdding(false)}
+                  className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveNew}
+                  disabled={!newName.trim()}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+                >
+                  Add Recipe
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
   );
 }

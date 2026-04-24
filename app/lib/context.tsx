@@ -45,12 +45,57 @@ export function MealPlannerProvider({ children }: MealPlannerProviderProps) {
     const savedRecipes = localStorage.getItem("meal-planner-recipes");
     const savedMealPlan = localStorage.getItem("meal-planner-mealplan");
 
+    const demoRecipes: Recipe[] = [
+      {
+        id: "r1",
+        name: "Baked Feta Pasta",
+        ingredients: [
+          { id: "i1", name: "pasta" },
+          { id: "i2", name: "feta" },
+          { id: "i3", name: "tomato" },
+        ],
+        people: [Person.Family],
+        source: "demo",
+      },
+      {
+        id: "r2",
+        name: "Chicken & Rice",
+        ingredients: [
+          { id: "i4", name: "chicken" },
+          { id: "i5", name: "rice" },
+          { id: "i6", name: "peas" },
+        ],
+        people: [Person.Matt, Person.Erin],
+        source: "demo",
+      },
+      {
+        id: "r3",
+        name: "Cauliflower Cheese Soup",
+        ingredients: [
+          { id: "i7", name: "cauliflower" },
+          { id: "i8", name: "cheese" },
+        ],
+        people: [Person.Family],
+        source: "demo",
+      },
+    ];
+
     if (savedRecipes) {
       try {
-        setRecipes(JSON.parse(savedRecipes));
+        const parsed = JSON.parse(savedRecipes);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRecipes(parsed);
+        } else {
+          // saved key present but empty array -> seed demos
+          setRecipes(demoRecipes);
+        }
       } catch (e) {
         console.error("Failed to load recipes from localStorage", e);
+        setRecipes(demoRecipes);
       }
+    } else {
+      // seed demo recipes for first-time users
+      setRecipes(demoRecipes);
     }
 
     if (savedMealPlan) {
