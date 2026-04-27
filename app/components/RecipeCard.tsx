@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ClipboardList, Copy, Pencil, Trash2 } from "lucide-react";
 import { Recipe, Ingredient, Person } from "../lib/types";
@@ -46,6 +46,13 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   );
   const [editSteps, setEditSteps] = useState(recipe.steps?.join("\n") ?? "");
   const [editImageUrl, setEditImageUrl] = useState(recipe.imageUrl ?? "");
+
+  useEffect(() => {
+    if (!editing) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setEditing(false); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [editing]);
 
   function saveEdit() {
     const ingredients: Ingredient[] = editIngredients

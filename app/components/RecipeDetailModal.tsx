@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, ExternalLink } from "lucide-react";
 import { Recipe } from "../lib/types";
@@ -21,6 +22,12 @@ function sourceDomain(source?: string) {
 export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModalProps) {
   const domain = sourceDomain(recipe.source);
   const hasSteps = recipe.steps && recipe.steps.length > 0;
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   return createPortal(
     <div

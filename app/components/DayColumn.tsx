@@ -10,10 +10,11 @@ import { useState } from "react";
 interface DayColumnProps {
   day: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
   dayName: string;
+  dateLabel: string;
   isToday: boolean;
 }
 
-export default function DayColumn({ day, dayName, isToday }: DayColumnProps) {
+export default function DayColumn({ day, dayName, dateLabel, isToday }: DayColumnProps) {
   const { getMealsByDay, addMealToDay } = useMealPlan();
   const { getRecipeById } = useRecipes();
   const [dragOver, setDragOver] = useState(false);
@@ -61,14 +62,12 @@ export default function DayColumn({ day, dayName, isToday }: DayColumnProps) {
     >
       {/* Day header */}
       <div className={`px-4 pt-3 pb-2 ${isToday ? "bg-primary text-primary-foreground" : ""}`}>
-        <h2 className={`text-lg font-bold ${isToday ? "text-primary-foreground" : "text-foreground"}`}>
+        <h2 className={`text-lg font-bold leading-tight ${isToday ? "text-primary-foreground" : "text-foreground"}`}>
           {dayName}
         </h2>
-        {isToday && (
-          <span className="mt-1 inline-block rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-semibold text-primary-foreground">
-            Today
-          </span>
-        )}
+        <p className={`text-xs ${isToday ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+          {isToday ? "Today · " : ""}{dateLabel}
+        </p>
       </div>
 
       {/* Meals area */}

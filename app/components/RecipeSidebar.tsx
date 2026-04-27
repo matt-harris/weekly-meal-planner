@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Plus, Search, X, Link, Loader2 } from "lucide-react";
 import { useRecipes } from "../lib/hooks/useRecipes";
@@ -25,6 +25,13 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
   const [importError, setImportError] = useState<string | null>(null);
   const [pendingImageUrl, setPendingImageUrl] = useState<string | undefined>();
   const [pendingNutrition, setPendingNutrition] = useState<import("../lib/types").Nutrition | undefined>();
+
+  useEffect(() => {
+    if (!adding) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setAdding(false); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [adding]);
 
   const filteredRecipes = recipes.filter((recipe) =>
     recipe.name.toLowerCase().includes(search.toLowerCase())

@@ -25,6 +25,16 @@ export default function WeeklyCalendar() {
   const today = new Date();
   const todayDay = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][today.getDay()];
 
+  const monday = new Date(weekStart + "T00:00:00");
+  function getDayDate(offset: number): string {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + offset);
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  }
+  const DAY_OFFSETS: Record<string, number> = {
+    MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4, SAT: 5, SUN: 6,
+  };
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden bg-background">
       {/* Week navigation */}
@@ -68,6 +78,7 @@ export default function WeeklyCalendar() {
               key={day}
               day={day}
               dayName={DAY_NAMES[day]}
+              dateLabel={getDayDate(DAY_OFFSETS[day])}
               isToday={isCurrentWeek && day === todayDay}
             />
           ))}
