@@ -20,7 +20,7 @@ function getWeekLabel(isoMonday: string): string {
 }
 
 export default function WeeklyCalendar() {
-  const { weekStart, isCurrentWeek, canGoPrev, canGoNext, goToPrevWeek, goToNextWeek } = useMealPlan();
+  const { weekStart, isCurrentWeek, canGoPrev, canGoNext, goToPrevWeek, goToNextWeek, goToCurrentWeek } = useMealPlan();
 
   const today = new Date();
   const todayDay = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][today.getDay()];
@@ -40,10 +40,13 @@ export default function WeeklyCalendar() {
 
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-foreground">{getWeekLabel(weekStart)}</span>
-          {isCurrentWeek && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-              This week
-            </span>
+          {!isCurrentWeek && (
+            <button
+              onClick={goToCurrentWeek}
+              className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+            >
+              Go to Today
+            </button>
           )}
         </div>
 
@@ -59,7 +62,7 @@ export default function WeeklyCalendar() {
 
       {/* Calendar grid */}
       <div className="flex-1 overflow-x-auto p-6">
-        <div className="grid min-w-[700px] grid-cols-7 gap-3">
+        <div className="grid grid-cols-[repeat(7,minmax(160px,1fr))] gap-3">
           {DAYS.map((day) => (
             <DayColumn
               key={day}

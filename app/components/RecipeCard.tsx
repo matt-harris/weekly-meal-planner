@@ -45,6 +45,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     recipe.ingredients.map((i) => i.name).join(", ")
   );
   const [editSteps, setEditSteps] = useState(recipe.steps?.join("\n") ?? "");
+  const [editImageUrl, setEditImageUrl] = useState(recipe.imageUrl ?? "");
 
   function saveEdit() {
     const ingredients: Ingredient[] = editIngredients
@@ -59,6 +60,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     updateRecipe(recipe.id, {
       name: editName.trim() || recipe.name,
       source: editSource.trim() || undefined,
+      imageUrl: editImageUrl.trim() || undefined,
       ingredients,
       steps: steps.length > 0 ? steps : undefined,
     });
@@ -160,6 +162,17 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                   value={editSource}
                   onChange={(e) => setEditSource(e.target.value)}
                   placeholder="https://..."
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground">Image URL</label>
+                <input
+                  type="text"
+                  value={editImageUrl}
+                  onChange={(e) => setEditImageUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>

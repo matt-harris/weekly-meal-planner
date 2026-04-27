@@ -42,6 +42,7 @@ export interface MealPlanContextType {
   canGoNext: boolean;
   goToPrevWeek: () => void;
   goToNextWeek: () => void;
+  goToCurrentWeek: () => void;
   addMealToDay: (day: DayMeal["day"], meal: Recipe | null, event?: Person) => void;
   removeMealFromDay: (id: string) => void;
   reorderMeals: (day: DayMeal["day"], draggedId: string, targetId: string, before: boolean) => void;
@@ -243,11 +244,15 @@ export function MealPlannerProvider({ children }: { children: ReactNode }) {
     if (canGoNext) setWeekStart((w) => addWeeks(w, 1));
   }, [canGoNext]);
 
+  const goToCurrentWeek = useCallback(() => {
+    setWeekStart(isoMonday(new Date()));
+  }, []);
+
   return (
     <RecipeContext.Provider value={{ recipes, addRecipe, removeRecipe, updateRecipe, getRecipeById }}>
       <MealPlanContext.Provider value={{
         mealPlan, weekStart, isCurrentWeek, canGoPrev, canGoNext,
-        goToPrevWeek, goToNextWeek,
+        goToPrevWeek, goToNextWeek, goToCurrentWeek,
         addMealToDay, removeMealFromDay, reorderMeals, getMealsByDay, clearAll,
       }}>
         {children}

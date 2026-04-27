@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { X } from "lucide-react";
+import { UtensilsCrossed, X } from "lucide-react";
 import { DayMeal } from "../lib/types";
 import { useMealPlan } from "../lib/hooks/useMealPlan";
 import RecipeDetailModal from "./RecipeDetailModal";
@@ -83,7 +83,10 @@ export default function MealCard({ meal }: MealCardProps) {
               </p>
             </>
           ) : meal.event ? (
-            <p className="text-sm font-semibold text-amber-500">{meal.event} Out</p>
+            <div className="flex items-center gap-2">
+              <UtensilsCrossed size={14} className="flex-shrink-0 text-muted-foreground" />
+              <p className="text-sm font-semibold text-foreground">{meal.event} Out</p>
+            </div>
           ) : null}
         </div>
         <button

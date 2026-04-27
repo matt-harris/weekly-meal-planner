@@ -246,6 +246,17 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
                 </div>
 
                 <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground">Image URL</label>
+                  <input
+                    type="text"
+                    value={pendingImageUrl ?? ""}
+                    onChange={(e) => setPendingImageUrl(e.target.value || undefined)}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+
+                <div>
                   <label className="mb-1 block text-sm font-medium text-foreground">
                     Ingredients <span className="font-normal text-muted-foreground">(comma-separated)</span>
                   </label>

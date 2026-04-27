@@ -1,5 +1,6 @@
 "use client";
 
+import { UtensilsCrossed } from "lucide-react";
 import { Person } from "../lib/types";
 
 interface OutPlaceholderProps {
@@ -15,11 +16,12 @@ export default function OutPlaceholder({ person }: OutPlaceholderProps) {
         e.dataTransfer.setData("type", "out");
         e.dataTransfer.setData("id", person);
       }}
-      className="cursor-move rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 transition-colors hover:bg-amber-500/20"
+      className="cursor-move rounded-lg border border-border bg-muted p-2.5 transition-colors hover:bg-accent"
     >
-      <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-        {person} Out
-      </p>
+      <div className="flex items-center gap-2">
+        <UtensilsCrossed size={14} className="flex-shrink-0 text-muted-foreground" />
+        <p className="text-sm font-medium text-foreground">{person} Out</p>
+      </div>
     </div>
   );
 }
