@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { ClipboardList, Pencil, Trash2 } from "lucide-react";
+import { ClipboardList, Copy, Pencil, Trash2 } from "lucide-react";
 import { Recipe, Ingredient, Person } from "../lib/types";
 import { useRecipes } from "../lib/hooks/useRecipes";
 
@@ -37,13 +37,14 @@ function sourceDomain(source?: string) {
 }
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
-  const { updateRecipe, removeRecipe } = useRecipes();
+  const { updateRecipe, removeRecipe, addRecipe } = useRecipes();
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(recipe.name);
   const [editSource, setEditSource] = useState(recipe.source ?? "");
   const [editIngredients, setEditIngredients] = useState(
     recipe.ingredients.map((i) => i.name).join(", ")
   );
+  const [editSteps, setEditSteps] = useState(recipe.steps?.join("\n") ?? "");
 
   function saveEdit() {
     const ingredients: Ingredient[] = editIngredients
@@ -51,10 +52,15 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
       .map((s) => s.trim())
       .filter(Boolean)
       .map((name, idx) => ({ id: `${recipe.id}-i${idx}`, name }));
+    const steps = editSteps
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
     updateRecipe(recipe.id, {
       name: editName.trim() || recipe.name,
       source: editSource.trim() || undefined,
       ingredients,
+      steps: steps.length > 0 ? steps : undefined,
     });
     setEditing(false);
   }
@@ -104,6 +110,13 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             title="Edit recipe"
           >
             <Pencil size={12} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); addRecipe({ ...recipe, id: Date.now().toString(), name: `Copy of ${recipe.name}` }); }}
+            className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            title="Duplicate recipe"
+          >
+            <Copy size={12} />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); removeRecipe(recipe.id); }}
@@ -160,6 +173,19 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                   onChange={(e) => setEditIngredients(e.target.value)}
                   rows={3}
                   placeholder="pasta, feta, tomatoes..."
+                  className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground">
+                  Steps <span className="font-normal text-muted-foreground">(one per line)</span>
+                </label>
+                <textarea
+                  value={editSteps}
+                  onChange={(e) => setEditSteps(e.target.value)}
+                  rows={4}
+                  placeholder={"Preheat oven to 200°C...\nMix ingredients together..."}
                   className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>

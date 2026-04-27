@@ -22,6 +22,9 @@ export default function DayColumn({ day, dayName, isToday }: DayColumnProps) {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    // Don't highlight column for within-day reorder drags (handled by MealCard)
+    const type = e.dataTransfer.types.includes("text/plain") ? null : e.dataTransfer.getData("type");
+    if (type === "reorder") return;
     e.dataTransfer.dropEffect = "copy";
     setDragOver(true);
   };

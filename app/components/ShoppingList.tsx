@@ -1,33 +1,41 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import { useShoppingList } from "../lib/hooks/useShoppingList";
 
 export default function ShoppingList() {
   const ingredients = useShoppingList();
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-      <h3 className="mb-4 text-lg font-semibold text-black dark:text-white">
-        Shopping List
-      </h3>
+    <div data-print-shopping-list>
       {ingredients.length === 0 ? (
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          No meals planned yet
-        </p>
+        <p className="text-sm text-muted-foreground">No meals planned yet</p>
       ) : (
         <ul className="space-y-2">
           {ingredients.map((ingredient, index) => (
             <li
               key={index}
-              className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300"
+              className="flex items-center justify-between border-b border-border pb-1.5 text-sm text-foreground last:border-0"
             >
               <span>{ingredient.name}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-500">
-                ×{ingredient.count}
-              </span>
+              {ingredient.count > 1 && (
+                <span className="text-xs text-muted-foreground">×{ingredient.count}</span>
+              )}
             </li>
           ))}
         </ul>
+      )}
+
+      {ingredients.length > 0 && (
+        <div className="mt-5 flex justify-end print:hidden">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <Printer size={14} />
+            Print list
+          </button>
+        </div>
       )}
     </div>
   );

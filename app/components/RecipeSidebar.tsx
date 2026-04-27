@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X, Link, Loader2 } from "lucide-react";
 import { useRecipes } from "../lib/hooks/useRecipes";
 import { Recipe, Person } from "../lib/types";
 import RecipeCard from "./RecipeCard";
@@ -19,10 +19,45 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
   const [newName, setNewName] = useState("");
   const [newSource, setNewSource] = useState("");
   const [newIngredients, setNewIngredients] = useState("");
+  const [newSteps, setNewSteps] = useState("");
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [pendingImageUrl, setPendingImageUrl] = useState<string | undefined>();
+  const [pendingNutrition, setPendingNutrition] = useState<import("../lib/types").Nutrition | undefined>();
 
   const filteredRecipes = recipes.filter((recipe) =>
     recipe.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  async function handleImport() {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    setImportError(null);
+    try {
+      const res = await fetch("/api/import-recipe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: importUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Import failed");
+      if (data.name) setNewName(data.name);
+      setNewSource(importUrl.trim());
+      if (Array.isArray(data.ingredients) && data.ingredients.length > 0) {
+        setNewIngredients(data.ingredients.join(", "));
+      }
+      if (Array.isArray(data.steps) && data.steps.length > 0) {
+        setNewSteps(data.steps.join("\n"));
+      }
+      if (data.imageUrl) setPendingImageUrl(data.imageUrl);
+      if (data.nutrition) setPendingNutrition(data.nutrition);
+    } catch (err) {
+      setImportError((err as Error).message);
+    } finally {
+      setImporting(false);
+    }
+  }
 
   function handleSaveNew() {
     if (!newName.trim()) return;
@@ -31,11 +66,18 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
       .map((s) => s.trim())
       .filter(Boolean)
       .map((name, idx) => ({ id: `new-${Date.now()}-i${idx}`, name }));
+    const steps = newSteps
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
     const newRecipe: Recipe = {
       id: Date.now().toString(),
       name: newName.trim(),
       source: newSource.trim() || undefined,
+      imageUrl: pendingImageUrl,
+      nutrition: pendingNutrition,
       ingredients,
+      steps: steps.length > 0 ? steps : undefined,
       people: [],
     };
     addRecipe(newRecipe);
@@ -43,12 +85,21 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
     setNewName("");
     setNewSource("");
     setNewIngredients("");
+    setNewSteps("");
+    setImportUrl("");
+    setImportError(null);
+    setPendingImageUrl(undefined);
   }
 
   function handleOpenAdd() {
     setNewName("");
     setNewSource("");
     setNewIngredients("");
+    setNewSteps("");
+    setImportUrl("");
+    setImportError(null);
+    setPendingImageUrl(undefined);
+    setPendingNutrition(undefined);
     setAdding(true);
   }
 
@@ -134,10 +185,41 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
             onClick={() => setAdding(false)}
           >
             <div
-              className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl"
+              className="w-full max-w-md overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-xl"
+              style={{ maxHeight: "calc(100vh - 2rem)" }}
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="font-heading mb-4 text-lg font-bold text-foreground">Add Recipe</h2>
+
+              {/* URL import */}
+              <div className="mb-5 rounded-lg border border-border bg-background p-3">
+                <label className="mb-2 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                  <Link size={13} />
+                  Import from URL
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleImport()}
+                    placeholder="https://..."
+                    className="min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleImport}
+                    disabled={importing || !importUrl.trim()}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+                  >
+                    {importing ? <Loader2 size={13} className="animate-spin" /> : null}
+                    {importing ? "Fetching…" : "Fetch"}
+                  </button>
+                </div>
+                {importError && (
+                  <p className="mt-2 text-xs text-destructive">{importError}</p>
+                )}
+              </div>
 
               <div className="space-y-4">
                 <div>
@@ -149,7 +231,6 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
                     onKeyDown={(e) => e.key === "Enter" && handleSaveNew()}
                     placeholder="Pasta Bake..."
                     className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    autoFocus
                   />
                 </div>
 
@@ -173,6 +254,19 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
                     onChange={(e) => setNewIngredients(e.target.value)}
                     rows={3}
                     placeholder="pasta, feta, tomatoes..."
+                    className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground">
+                    Steps <span className="font-normal text-muted-foreground">(one per line)</span>
+                  </label>
+                  <textarea
+                    value={newSteps}
+                    onChange={(e) => setNewSteps(e.target.value)}
+                    rows={4}
+                    placeholder={"Preheat oven to 200°C...\nMix ingredients together...\nBake for 30 minutes..."}
                     className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>

@@ -17,13 +17,22 @@ export interface Ingredient {
   // quantity and unit deferred to post-MVP
 }
 
+export interface Nutrition {
+  calories?: string;
+  protein?: string;
+  carbs?: string;
+  fat?: string;
+}
+
 export interface Recipe {
   id: string;
   name: string;
   ingredients: Ingredient[];
+  steps?: string[];
   people: Person[]; // who this recipe is for
   imageUrl?: string;
   source?: string; // URL or "manual"
+  nutrition?: Nutrition;
 }
 
 export interface DayMeal {
