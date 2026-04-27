@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ClipboardList, Copy, Pencil, Trash2 } from "lucide-react";
+import { CalendarPlus, ClipboardList, Copy, Pencil, Trash2 } from "lucide-react";
 import { Recipe, Ingredient, Person } from "../lib/types";
 import { useRecipes } from "../lib/hooks/useRecipes";
+import { useMealPlan } from "../lib/hooks/useMealPlan";
+import RecipeDetailModal from "./RecipeDetailModal";
+import DayPickerModal from "./DayPickerModal";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -38,7 +41,10 @@ function sourceDomain(source?: string) {
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   const { updateRecipe, removeRecipe, addRecipe } = useRecipes();
+  const { addMealToDay } = useMealPlan();
   const [editing, setEditing] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [dayPickerOpen, setDayPickerOpen] = useState(false);
   const [editName, setEditName] = useState(recipe.name);
   const [editSource, setEditSource] = useState(recipe.source ?? "");
   const [editIngredients, setEditIngredients] = useState(
@@ -46,6 +52,11 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   );
   const [editSteps, setEditSteps] = useState(recipe.steps?.join("\n") ?? "");
   const [editImageUrl, setEditImageUrl] = useState(recipe.imageUrl ?? "");
+  const [previewImageUrl, setPreviewImageUrl] = useState(recipe.imageUrl ?? "");
+  useEffect(() => {
+    const t = setTimeout(() => setPreviewImageUrl(editImageUrl), 400);
+    return () => clearTimeout(t);
+  }, [editImageUrl]);
 
   useEffect(() => {
     if (!editing) return;
@@ -86,7 +97,8 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           e.dataTransfer.setData("type", "recipe");
           e.dataTransfer.setData("id", recipe.id);
         }}
-        className="group flex cursor-move items-center gap-3 rounded-lg border border-border bg-card p-2.5 transition-shadow hover:shadow-md"
+        onClick={() => setDetailOpen(true)}
+        className="group flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-card p-2.5 transition-shadow hover:shadow-md"
       >
         {/* Thumbnail */}
         {recipe.imageUrl ? (
@@ -111,8 +123,15 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           </p>
         </div>
 
-        {/* Actions (visible on hover) */}
-        <div className="flex flex-shrink-0 flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        {/* Actions — always visible on mobile, hover-only on desktop */}
+        <div className="flex flex-shrink-0 flex-col gap-1 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+          <button
+            onClick={(e) => { e.stopPropagation(); setDayPickerOpen(true); }}
+            className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-primary/10 hover:text-primary"
+            title="Add to day"
+          >
+            <CalendarPlus size={12} />
+          </button>
           <button
             onClick={(e) => { e.stopPropagation(); setEditing(true); }}
             className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -121,7 +140,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             <Pencil size={12} />
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); addRecipe({ ...recipe, id: Date.now().toString(), name: `Copy of ${recipe.name}` }); }}
+            onClick={(e) => { e.stopPropagation(); const base = recipe.name.replace(/^(Copy of )+/i, ""); addRecipe({ ...recipe, id: Date.now().toString(), name: `Copy of ${base}` }); }}
             className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             title="Duplicate recipe"
           >
@@ -137,15 +156,26 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
       </div>
 
+      {detailOpen && (
+        <RecipeDetailModal recipe={recipe} onClose={() => setDetailOpen(false)} />
+      )}
+
+      {dayPickerOpen && (
+        <DayPickerModal
+          onSelect={(day) => addMealToDay(day, recipe)}
+          onClose={() => setDayPickerOpen(false)}
+        />
+      )}
+
       {/* Edit Modal — portalled to body so it's full-screen centered */}
       {editing &&
         createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in"
           onClick={() => setEditing(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl"
+            className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-modal-in"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="font-heading mb-4 text-lg font-bold text-foreground">Edit Recipe</h2>
@@ -182,6 +212,17 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                   placeholder="https://example.com/image.jpg"
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+                {previewImageUrl && (
+                  <img
+                    key={previewImageUrl}
+                    src={previewImageUrl}
+                    alt="Preview"
+                    hidden
+                    onLoad={(e) => { e.currentTarget.hidden = false; }}
+                    onError={(e) => { e.currentTarget.hidden = true; }}
+                    className="mt-2 h-28 w-full rounded-lg border border-border object-cover"
+                  />
+                )}
               </div>
 
               <div>

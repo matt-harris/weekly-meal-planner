@@ -20,7 +20,8 @@ function getWeekLabel(isoMonday: string): string {
 }
 
 export default function WeeklyCalendar() {
-  const { weekStart, isCurrentWeek, canGoPrev, canGoNext, goToPrevWeek, goToNextWeek, goToCurrentWeek } = useMealPlan();
+  const { weekStart, isCurrentWeek, canGoPrev, canGoNext, goToPrevWeek, goToNextWeek, goToCurrentWeek, mealPlan } = useMealPlan();
+  const daysPlanned = new Set(mealPlan.meals.map((m) => m.day)).size;
 
   const today = new Date();
   const todayDay = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][today.getDay()];
@@ -48,16 +49,19 @@ export default function WeeklyCalendar() {
           <ChevronLeft size={18} />
         </button>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">{getWeekLabel(weekStart)}</span>
-          {!isCurrentWeek && (
-            <button
-              onClick={goToCurrentWeek}
-              className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-            >
-              Go to Today
-            </button>
-          )}
+        <div className="flex flex-col items-center gap-0.5">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground">{getWeekLabel(weekStart)}</span>
+            {!isCurrentWeek && (
+              <button
+                onClick={goToCurrentWeek}
+                className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+              >
+                Go to Today
+              </button>
+            )}
+          </div>
+          <span className="text-xs text-muted-foreground">{daysPlanned} / 7 days planned</span>
         </div>
 
         <button

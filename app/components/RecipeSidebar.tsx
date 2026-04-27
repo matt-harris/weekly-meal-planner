@@ -26,6 +26,12 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
   const [pendingImageUrl, setPendingImageUrl] = useState<string | undefined>();
   const [pendingNutrition, setPendingNutrition] = useState<import("../lib/types").Nutrition | undefined>();
 
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | undefined>();
+  useEffect(() => {
+    const t = setTimeout(() => setPreviewImageUrl(pendingImageUrl), 400);
+    return () => clearTimeout(t);
+  }, [pendingImageUrl]);
+
   useEffect(() => {
     if (!adding) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setAdding(false); };
@@ -188,11 +194,11 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
       {adding &&
         createPortal(
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in"
             onClick={() => setAdding(false)}
           >
             <div
-              className="w-full max-w-md overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-xl"
+              className="w-full max-w-md overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-xl animate-modal-in"
               style={{ maxHeight: "calc(100vh - 2rem)" }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -261,6 +267,17 @@ export default function RecipeSidebar({ onClose }: RecipeSidebarProps) {
                     placeholder="https://example.com/image.jpg"
                     className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
+                  {previewImageUrl && (
+                    <img
+                      key={previewImageUrl}
+                      src={previewImageUrl}
+                      alt="Preview"
+                      hidden
+                      onLoad={(e) => { e.currentTarget.hidden = false; }}
+                      onError={(e) => { e.currentTarget.hidden = true; }}
+                      className="mt-2 h-28 w-full rounded-lg border border-border object-cover"
+                    />
+                  )}
                 </div>
 
                 <div>

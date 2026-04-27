@@ -28,11 +28,11 @@ export default function ShoppingListButton() {
       {open &&
         createPortal(
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in"
             onClick={() => setOpen(false)}
           >
             <div
-              className="relative w-full max-w-2xl rounded-xl border border-border bg-card p-6 shadow-xl"
+              className="relative w-full max-w-2xl rounded-xl border border-border bg-card p-6 shadow-xl animate-modal-in"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between">

@@ -31,11 +31,11 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card shadow-xl"
+        className="relative w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card shadow-xl animate-modal-in"
         style={{ maxHeight: "calc(100vh - 2rem)" }}
         onClick={(e) => e.stopPropagation()}
       >

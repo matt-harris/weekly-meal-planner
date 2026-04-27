@@ -32,11 +32,11 @@ export default function ClearAllButton() {
       {confirming &&
         createPortal(
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in"
             onClick={() => setConfirming(false)}
           >
             <div
-              className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
+              className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl animate-modal-in"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="font-heading mb-1 text-lg font-bold text-foreground">Clear this week?</h2>

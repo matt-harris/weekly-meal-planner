@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { UtensilsCrossed, X } from "lucide-react";
 import { DayMeal } from "../lib/types";
 import { useMealPlan } from "../lib/hooks/useMealPlan";
+import { useToast } from "./ToastProvider";
 import RecipeDetailModal from "./RecipeDetailModal";
 
 interface MealCardProps {
@@ -11,7 +12,8 @@ interface MealCardProps {
 }
 
 export default function MealCard({ meal }: MealCardProps) {
-  const { removeMealFromDay, reorderMeals } = useMealPlan();
+  const { removeMealFromDay, reorderMeals, addMealToDay } = useMealPlan();
+  const { showUndo } = useToast();
   const [detailOpen, setDetailOpen] = useState(false);
   const [dropPos, setDropPos] = useState<"top" | "bottom" | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -90,7 +92,13 @@ export default function MealCard({ meal }: MealCardProps) {
           ) : null}
         </div>
         <button
-          onClick={(e) => { e.stopPropagation(); removeMealFromDay(meal.id); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            const snapshot = meal;
+            removeMealFromDay(meal.id);
+            const label = meal.meal ? `"${meal.meal.name}" removed` : `"${meal.event} Out" removed`;
+            showUndo(label, () => addMealToDay(snapshot.day, snapshot.meal ?? null, snapshot.event));
+          }}
           className="mt-0.5 flex-shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
           title="Remove"
         >

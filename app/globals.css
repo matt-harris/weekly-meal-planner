@@ -28,6 +28,19 @@
   --radius-lg:  var(--radius);
   --radius-xl:  calc(var(--radius) * 1.5);
   --radius-2xl: calc(var(--radius) * 2);
+
+  --animate-fade-in:   fade-in  0.15s ease-out both;
+  --animate-modal-in:  modal-in 0.15s ease-out both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
 }
 
 /* ── Light theme ──────────────────────────────────────────────────────────── */

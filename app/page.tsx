@@ -7,11 +7,13 @@ import WeeklyCalendar from "./components/WeeklyCalendar";
 import ClearAllButton from "./components/ClearAllButton";
 import ShoppingListButton from "./components/ShoppingListButton";
 import ThemeToggle from "./components/ThemeToggle";
+import { ToastProvider } from "./components/ToastProvider";
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
+    <ToastProvider>
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -66,5 +68,6 @@ export default function Home() {
         </div>
       </div>
     </div>
+    </ToastProvider>
   );
 }
